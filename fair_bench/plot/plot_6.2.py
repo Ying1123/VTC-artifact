@@ -12,12 +12,12 @@ from visualize import (get_req_rate_over_time, get_throughput_over_time, get_ser
 
 def plot(names, x, ys, x_label, y_label, figname, baseline):
     FONTSIZE = 20
-    MARKERSIZE = 4
+    MARKERSIZE = 8
     legend_x = 0.5
     legend_y = 1.1
     ylabel_x = -0.1
     ylabel_y = 0.5
-    markers = ['o','s','v','+','s','D', 'P','X']
+    markers = ['v','s','o','+','s','D', 'P','X']
 
     legends = []
     curves = []
@@ -47,9 +47,9 @@ def plot(names, x, ys, x_label, y_label, figname, baseline):
 
 
 if __name__ == "__main__":
-    # baselines = ["VTC", "LCF", "FCFS"]
-    baselines = ["LCF"]
-    workloads = ["poisson_short_long_2", "increase", "overload", "proportional", "poisson_short_long", "on_off_overload", "on_off_less"]
+    baselines = ["VTC", "LCF", "FCFS"]
+    # baselines = ["LCF"]
+    workloads = ["poisson_short_long_2", "increase", "overload", "proportional", "poisson_short_long", "on_off_overload", "on_off_less", "dist_shift"]
 
     for baseline in baselines:
         for workload in workloads:
@@ -68,9 +68,12 @@ if __name__ == "__main__":
                 result = exp["result"]
 
                 responses = result["responses"]
-                T = max([response["req_time"]+response['request_latency'] for response in responses])
+                # T = max([response["req_time"]+response['request_latency'] for response in responses])
+                T = max([response["req_time"] for response in responses])
                 T = int(T) / 10 * 10
-                num_x = 100
+                num_x = 30
+                if workload == "proportional":
+                    num_x = 20
                 window = 60
                 x_ticks = [T / num_x * i for i in range(num_x)]
 

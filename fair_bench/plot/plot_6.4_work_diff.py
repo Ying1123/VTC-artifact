@@ -67,9 +67,9 @@ def plot_boxplot(baselines, ys, y_label, figname):
 
 def plot(baslines, x, ys, x_label, y_label, figname):
     FONTSIZE = 20
-    MARKERSIZE = 4
+    MARKERSIZE = 8
     legend_x = 0.5
-    legend_y = 1.1
+    legend_y = 1.2
     ylabel_x = -0.05
     ylabel_y = 0.5
     markers = ['o','s','v','+','s','D', 'P','X']
@@ -86,12 +86,12 @@ def plot(baslines, x, ys, x_label, y_label, figname):
 
     ax.set_xlim(120)
     # ax.set_ylim(0)
-    ax.set_ylim(0,200000)
+    ax.set_ylim(0,100000)
     ax.set_xlabel(x_label, fontsize=21)
     ax.tick_params(axis='both', which='major', labelsize=FONTSIZE, length=2, width=1)
     # ax.yaxis.set_major_formatter(y_format)
     fig.legend(curves, legends, loc="upper center", bbox_to_anchor=(legend_x, legend_y),
-               ncol=len(legends) // min(2, len(legends) // 4 + 1), fontsize=18)
+               ncol=2, fontsize=18)
     fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=21)
     fig.subplots_adjust(wspace=0.2)
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     num_tokens = ['65000','35000']
     baselines_bp = ['VTC-256-35000','VTC-512-35000','VTC-768-35000','VTC-256-65000','VTC-512-65000','VTC-768-65000']
     workload = 'overload-s4'
-    baselines = ['VTC-256-35000','VTC-512-35000']
+    baselines = ['VTC-256-35000','VTC-512-35000', 'VTC-768-35000']
     baselines2 = ['VTC-512-35000','VTC-512-65000']
     
     # different req len
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             responses = result["responses"]
             T = max([response["req_time"] for response in responses])
             T = int(T) / 10 * 10
-            num_x = 100
+            num_x = 20
             window = 60
             x_ticks = [T / num_x * i for i in range(num_x)]
             x_ticks = x_ticks[1:]
@@ -171,7 +171,7 @@ if __name__ == "__main__":
             responses = result["responses"]
             T = max([response["req_time"] for response in responses])
             T = int(T) / 10 * 10
-            num_x = 100
+            num_x = 50
             window = 60
             x_ticks = [T / num_x * i for i in range(num_x)]
             x_ticks = x_ticks[1:]

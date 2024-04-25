@@ -36,12 +36,12 @@ def get_acc_service_diff_over_time(responses, T, window, x_ticks, users):
 
 def plot(baslines, x, ys, x_label, y_label, figname):
     FONTSIZE = 20
-    MARKERSIZE = 4
+    MARKERSIZE = 8
     legend_x = 0.5
     legend_y = 1.1
     ylabel_x = 0
     ylabel_y = 0.5
-    markers = ['o','s','v','+','s','D', 'P','X']
+    markers = ['v','s','o','+','s','D', 'P','X']
 
     legends = []
     curves = []
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                 responses = result["responses"]
                 T = max([response["req_time"] for response in responses])
                 T = int(T) / 10 * 10
-                num_x = 100
+                num_x = 20
                 window = 60
                 x_ticks = [T / num_x * i for i in range(num_x)]
                 x_ticks = x_ticks[1:]
