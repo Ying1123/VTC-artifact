@@ -40,6 +40,17 @@ paper_suite = {
         on_off = [-1],
         mode = ["uniform"],
     ),
+    "real": BenchmarkConfig(
+        num_adapters = [-1],
+        alpha = [-1],
+        req_rate = [2.5],
+        cv = [-1],
+        duration = [60 * 10],
+        input_range = [[1, 1024]],
+        output_range = [[1, 1024]],
+        on_off = [-1],
+        mode = ["real"],
+    ),
     "overload": BenchmarkConfig(
         num_adapters = [2],
         alpha = [-1],
@@ -309,6 +320,10 @@ def get_all_suites(debug=False, suite=None, breakdown=False):
         for workload in exp:
             (num_adapters, alpha, req_rate, cv, duration,
                     input_range, output_range, on_off, mode) = exp[workload]
+            if mode == "real":
+                # These arguments are not used in real trace
+                num_adapters = alpha = cv = [None]
+
             for combination in itertools.product(
                                    num_adapters, alpha, req_rate, cv, duration,
                                    input_range, output_range, on_off, mode):

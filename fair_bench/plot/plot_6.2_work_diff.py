@@ -14,6 +14,7 @@ def cost_func(input_len, output_len):
 
 def get_acc_service_diff_over_time(responses, T, window, x_ticks, users):
     y = []
+    print(f"there are {len(users)} users")
     for i, user_name in enumerate(users):
         y.append([0] * len(x_ticks))
         for i, x in enumerate(x_ticks):
@@ -111,8 +112,6 @@ if __name__ == "__main__":
                 users = sorted(list(set([response["adapter_dir"] for response in responses])))
                 acc_service_diff = get_acc_service_diff_over_time(responses, T, window, x_ticks, users)
                 acc_services_diffs.append(acc_service_diff)
-                
-            
 
         # plot
         plot(baselines, x_ticks, acc_services_diffs, "Time (s)", "Absolute Difference in Service", f"sec6.2_{workload}_acc_service_diff")

@@ -344,12 +344,13 @@ def downsample(json_file, req_rate, duration, tokenizer, input_range, output_ran
     # sample a bit more than needed
     selected_indicies = np.random.choice(len(all_conversations), more_ratio * need_num, replace=False)
     downsampled_conversations = [all_conversations[idx] for idx in selected_indicies]
-    for idx, conv in enumerate(downsampled_conversations):
+    for idx in reversed(range(len(downsampled_conversations))):
+        conv = downsampled_conversations[idx]
         prompt_len = len(tokenizer(conv["conversation"][0]["content"]).input_ids)
         output_len = len(tokenizer(conv["conversation"][1]["content"]).input_ids)
         if prompt_len >= input_range[1] or output_len >= output_range[1]:
-            # to avoid OOM in some configurations
             downsampled_conversations.pop(idx)
+        
     downsampled_conversations = downsampled_conversations[:need_num]
     print(f"Downsampled {len(downsampled_conversations)}")
     return downsampled_conversations 
@@ -385,7 +386,7 @@ def sort_and_rescale_by_req_time(conversations, duration):
 
 def parse_into_req(base_model, conversations, model_mapping, tokenizer):
     reqs = []
-    for idx, conv in enumerate(tqdm(conversations, desc="parse into reqs")):
+    for idx, conv in enumerate(conversations):
         model = conv["model"]
         name = model_mapping[model]
         # print(conv["conversation"][0]["content"])

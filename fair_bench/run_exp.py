@@ -207,18 +207,28 @@ def run_exp(model_setting, backend, server, config, output, seed=42, debug=False
     # assert duration >= 30
     base_model = BASE_MODEL[model_setting]
     adapter_dirs = LORA_DIR[model_setting]
-    adapter_dirs = get_adapter_dirs(num_adapters, adapter_dirs)
-    adapter_dirs = [(base_model, adapter_dirs[i]) for i in range(num_adapters)]
-    if num_adapters == 0:
-        adapter_dirs = [(base_model, None)]
-        num_adapters = 1
-    requests = generate_requests(num_adapters, alpha, req_rate, cv, duration,
-                                 input_range, output_range, on_off, mode, adapter_dirs,
-                                 seed=seed)
+    if mode == "real":
+        print("*** num_adapters, cv and alpha are not used in real mode ***")
+        adapter_dirs, requests = get_real_requests(trace_file="/home/ubuntu/clean_chat_conv_20231016.json",
+                                                   req_rate=req_rate, duration=duration,
+                                                   base_model=base_model, adapter_dirs=adapter_dirs,
+                                                   input_range=input_range, output_range=output_range,
+                                                   seed=seed)
+    else:
+        # print(requests)
+        adapter_dirs = get_adapter_dirs(num_adapters, adapter_dirs)
+        adapter_dirs = [(base_model, adapter_dirs[i]) for i in range(num_adapters)]
+        if num_adapters == 0:
+            adapter_dirs = [(base_model, None)]
+            num_adapters = 1
+        requests = generate_requests(num_adapters, alpha, req_rate, cv, duration,
+                                    input_range, output_range, on_off, mode, adapter_dirs,
+                                    seed=seed)
     avg_prompt_len = np.mean([req.prompt_len for req in requests])
     avg_output_len = np.mean([req.output_len for req in requests])
     avg_len = np.mean([req.prompt_len + req.output_len for req in requests])
-    print("avg_len:", avg_len, "avg_prompt_len:", avg_prompt_len, "avg_output_len:", avg_output_len)
+    max_len = np.max([req.prompt_len + req.output_len for req in requests])
+    print("num_adapters", len(adapter_dirs), "num_requests", len(requests), "avg_len:", avg_len, "avg_prompt_len:", avg_prompt_len, "avg_output_len:", avg_output_len, "max_len:", max_len)
        
     if debug:
         print("num requests:", len(requests))
@@ -248,6 +258,7 @@ if __name__ == "__main__":
     parser.add_argument("--append", action="store_true")
 
     parser.add_argument("--server", type=str, default="http://localhost:8000")
+
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", type=str, default=None)
     args = parser.parse_args()

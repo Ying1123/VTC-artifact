@@ -104,3 +104,4 @@ class LShareReqQueue(ReqQueue):
 
     def update_counter(self, current_batch: Batch):
         pass
+

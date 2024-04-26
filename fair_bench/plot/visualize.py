@@ -79,9 +79,13 @@ def get_service_over_time(responses, T, window, x_ticks, users):
                 if response["adapter_dir"] == user_name:
                     start_time = response["req_time"] + response["first_token_latency"]
                     end_time = response["req_time"] + response["request_latency"]
-                    service = cost_func(response['prompt_len'],response["output_len"])
-                    overlap = max(min(r, end_time) - max(l, start_time), 0)
-                    y[-1][i] += service * overlap / (end_time - start_time)
+                    if end_time == start_time: # for aborted requests
+                        assert response["first_token_latency"] == -1, "first_token_latency should be -1 for aborted requests"
+                        y[-1][i] += 0
+                    else:
+                        service = cost_func(response['prompt_len'],response["output_len"])
+                        overlap = max(min(r, end_time) - max(l, start_time), 0)
+                        y[-1][i] += service * overlap / (end_time - start_time)
             y[-1][i] /= window
     return y
 
