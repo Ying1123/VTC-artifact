@@ -11,6 +11,7 @@ import csv
 import json
 import numpy as np
 import os
+import pickle
 import sys
 import time
 from dataclasses import dataclass, asdict
@@ -209,11 +210,19 @@ def run_exp(model_setting, backend, server, config, output, seed=42, debug=False
     adapter_dirs = LORA_DIR[model_setting]
     if mode == "real":
         print("*** num_adapters, cv and alpha are not used in real mode ***")
-        adapter_dirs, requests = get_real_requests(trace_file="/home/ubuntu/clean_chat_conv_20231016.json",
-                                                   req_rate=req_rate, duration=duration,
-                                                   base_model=base_model, adapter_dirs=adapter_dirs,
-                                                   input_range=input_range, output_range=output_range,
-                                                   seed=seed)
+        pkl_file_path = "real_trace.pkl"
+        if os.path.exists(pkl_file_path):
+            with open(pkl_file_path, "rb") as pkl_file:
+                obj = pickle.load(pkl_file)
+            adapter_dirs, requests = obj[0], obj[1]
+        else:
+            adapter_dirs, requests = get_real_requests(trace_file="dummy_chat_conv_20231016.json",
+                                                       req_rate=req_rate, duration=duration,
+                                                       base_model=base_model, adapter_dirs=adapter_dirs,
+                                                       input_range=input_range, output_range=output_range,
+                                                       seed=seed)
+            with open(pkl_file_path, "wb") as pkl_file:
+                pickle.dump([adapter_dirs, requests], pkl_file)
     else:
         # print(requests)
         adapter_dirs = get_adapter_dirs(num_adapters, adapter_dirs)
@@ -243,6 +252,7 @@ def run_exp(model_setting, backend, server, config, output, seed=42, debug=False
 
     res = get_res_stats(responses, benchmark_time, backend)
 
+    os.makedirs("/".join(output.split("/")[:-1]), exist_ok=True)
     with open(output, "a") as f:
         f.write(json.dumps(res) + "\n")
 

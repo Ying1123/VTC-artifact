@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
@@ -51,49 +52,54 @@ def plot(names, x, ys, x_label, y_label, figname):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--method", type=str, default="VTC")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--method", type=str, default="VTC")
+    # args = parser.parse_args()
 
-    args.input = f"../{args.method}/all_results_real.jsonl"
-    # methods = ["VTC", "FCFS"]
-    exps = []
-    with open(args.input, "r") as f:
-        lines = f.readlines()
-        for line in lines:
-            exps.append({})
-            exps[-1]["config"] = json.loads(line)["config"]
-            exps[-1]["result"] = json.loads(line)["result"]
+    methods = ["VTC", "FCFS", "LShare/rpm5", "LShare/rpm10", "LShare/rpm15", "LShare/rpm20"]
+    for method in methods:
+        json_file = f"../{method}/all_results_real.jsonl"
+        if not os.path.exists(json_file): continue
+        exps = []
+        with open(json_file, "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                exps.append({})
+                exps[-1]["config"] = json.loads(line)["config"]
+                exps[-1]["result"] = json.loads(line)["result"]
 
-    # get data points
-    for exp in exps:
-        config = exp["config"]
-        result = exp["result"]
+        # get data points
+        for exp in exps:
+            config = exp["config"]
+            result = exp["result"]
 
-        responses = result["responses"]
-        T = max([response["req_time"] for response in responses])
-        T = int(T) / 10 * 10
-        num_x = 100
-        window = 60
-        x_ticks = [T / num_x * i for i in range(num_x)]
+            responses = result["responses"]
+            T = max([response["req_time"] for response in responses])
+            T = int(T) / 10 * 10
+            num_x = 100
+            window = 60
+            x_ticks = [T / num_x * i for i in range(num_x)]
 
-        users = sorted(list(set([response["adapter_dir"] for response in responses])))
+            users = sorted(list(set([response["adapter_dir"] for response in responses])))
+            cnt = {}
+            for user_name in users:
+                cnt[user_name] = 0
+            for response in responses:
+                cnt[response["adapter_dir"]] += 1
+            # print(cnt)
+            sorted_cnt = [key for key, value in sorted(cnt.items(), key=lambda x: x[1])]
+            # users = [sorted_cnt[i] for i in [12, 13, 25, 26]]
+            # print(users)
 
-        req_rate = get_req_rate_over_time(responses, T, window, x_ticks, users)
-        throughput = get_throughput_over_time(responses, T, window, x_ticks, users)
-        service = get_service_over_time(responses, T, window, x_ticks, users)
-        response_time = get_response_time_over_time(responses, T, window, x_ticks, users)
+            req_rate = get_req_rate_over_time(responses, T, window, x_ticks, users)
+            throughput = get_throughput_over_time(responses, T, window, x_ticks, users)
+            service = get_service_over_time(responses, T, window, x_ticks, users)
+            response_time = get_response_time_over_time(responses, T, window, x_ticks, users)
 
-    # plot
-    plot(users, x_ticks, req_rate, "Time (s)", "Request Rate (token/s)", f"real_plots/{args.method}/sec6.3_real_req_rate")
-    plot(users, x_ticks, throughput, "Time (s)", "Throughput (token/s)", f"real_plots/{args.method}/sec6.3_real_throughput")
-    plot(users, x_ticks, service, "Time (s)", "Service (Token/s)", f"real_plots/{args.method}/sec6.3_real_service")
-    plot(users, x_ticks, response_time, "Time (s)", "Response Time (s)", f"real_plots/{args.method}/sec6.3_real_response_time")
+        # plot
+        # plot(users, x_ticks, req_rate, "Time (s)", "Request Rate (token/s)", f"../{args.method}/sec6.3_real_req_rate")
+        # plot(users, x_ticks, throughput, "Time (s)", "Throughput (token/s)", f"../{args.method}/sec6.3_real_throughput")
+        # plot(users, x_ticks, service, "Time (s)", "Service (Token/s)", f"../{args.method}/sec6.3_real_service")
+        plot(users, x_ticks, response_time, "Time (s)", "Response Time (s)", f"../{method}/sec6.3_real_response_time")
 
-    cnt = {}
-    for user_name in users:
-        cnt[user_name] = 0
 
-    for response in responses:
-        cnt[response["adapter_dir"]] += 1
-    print(cnt)

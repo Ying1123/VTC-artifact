@@ -32,8 +32,9 @@ downsample_models = []
 def get_log_files(max_num_files=None):
     dates = []
     # Change the range to include only last two months
-    for month in range(8, 12):
+    for month in range(8, 11):
         for day in range(1, 33):
+            if month == 10 and day == 17: break
             dates.append(f"2023-{month:02d}-{day:02d}")
 
     filenames = []
@@ -93,7 +94,7 @@ def clean_chat_data(log_files, action_type):
         if not isinstance(model, str):
             ct_invalid += 1
             continue
-        model = replace_model_name(model)
+        model = replace_model_name(model, row["tstamp"])
 
         turn = len(conversation) // 2
         

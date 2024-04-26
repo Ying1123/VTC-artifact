@@ -358,7 +358,6 @@ def main():
     ''' slora arguments '''
     parser.add_argument("--lora-dirs", type=str, default=[], action="append",
                         help="the adapter weight dirs associate with base model dir")
-    parser.add_argument("--fair-weights", type=int, default=[], action="append")
     parser.add_argument("--dummy", action="store_true")
     parser.add_argument("--swap", action="store_true")
     parser.add_argument("--pool-size-lora", type=int, default=0)
@@ -368,6 +367,8 @@ def main():
     parser.add_argument("--profile", action="store_true")
     parser.add_argument("--batch-num-adapters", type=int, default=None)
     parser.add_argument("--enable-abort", action="store_true")
+    parser.add_argument("--fair-weights", type=int, default=[], action="append")
+    parser.add_argument("--rate-limit", type=int, default=None)
 
     # debug parameters
     # do not use no-lora-swap, does not rule out the swap over MemAllocator

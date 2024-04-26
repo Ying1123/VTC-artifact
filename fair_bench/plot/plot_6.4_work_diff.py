@@ -108,7 +108,6 @@ if __name__ == "__main__":
     parser.add_argument("--input", type=str, default="../all_results_proportional.jsonl")
     args = parser.parse_args()
 
-    num_tokens = ['65000','35000']
     baselines_bp = ['VTC-256-35000','VTC-512-35000','VTC-768-35000','VTC-256-65000','VTC-512-65000','VTC-768-65000']
     workload = 'overload-s4'
     baselines = ['VTC-256-35000','VTC-512-35000', 'VTC-768-35000']

@@ -9,9 +9,9 @@ if __name__ == "__main__":
     #parser.add_argument("--input", type=str, required=True)
     args = parser.parse_args()
 
-    x_axis = ["5", "10", "15"]
+    x_axis = ["5", "10", "15", "20"]
     y_axis = []
-    dirs = ["../LShare/rpm_5", "../LShare/rpm_10", "../LShare/rpm_15" ]
+    dirs = ["../LShare/rpm5", "../LShare/rpm10", "../LShare/rpm15", "../LShare/rpm20"]
     for dir in dirs:
         with open(os.path.join(dir, "all_results_real.jsonl"), "r") as f:
             json_file = json.load(f)
@@ -35,19 +35,21 @@ if __name__ == "__main__":
     plt.xticks(fontsize=FONTSIZE)
     plt.yticks(fontsize=FONTSIZE)
     
-    plt.savefig("real_plots/LShare/LShare_overall_throughput.pdf", bbox_inches="tight")
+    figname = "../LShare/LShare_overall_throughput.pdf"
+    plt.savefig(figname, bbox_inches="tight")
+    print(f"Saved figure to {figname}")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", type=str, required=True)
-    args = parser.parse_args()
-
-    with open(args.input, "r") as f:
-        json_file = json.load(f)
-    
-    total_time = json_file["result"]["total_time"]
-    total_work  = 0
-    for r in json_file["result"]["responses"]:
-        if r["first_token_latency"] != -1:
-            total_work += r["output_len"]
-    print(total_work/total_time)
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--input", type=str, required=True)
+#     args = parser.parse_args()
+# 
+#     with open(args.input, "r") as f:
+#         json_file = json.load(f)
+#     
+#     total_time = json_file["result"]["total_time"]
+#     total_work  = 0
+#     for r in json_file["result"]["responses"]:
+#         if r["first_token_latency"] != -1:
+#             total_work += r["output_len"]
+#     print(total_work/total_time)

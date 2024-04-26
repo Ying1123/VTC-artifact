@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
@@ -48,13 +49,15 @@ def plot(names, x, ys, x_label, y_label, figname, baseline):
 
 if __name__ == "__main__":
     baselines = ["VTC", "LCF", "FCFS"]
-    # baselines = ["LCF"]
     workloads = ["poisson_short_long_2", "increase", "overload", "proportional", "poisson_short_long", "on_off_overload", "on_off_less", "dist_shift"]
 
     for baseline in baselines:
         for workload in workloads:
             exps = []
             input = f"../{baseline}/all_results_{workload}.jsonl"
+            if not os.path.exists(input):
+                print(f"SKIP -- {input} not exists")
+                continue
             with open(input, "r") as f:
                 lines = f.readlines()
                 for line in lines:

@@ -11,7 +11,7 @@ from slora.utils.metric import attainment_func
 
 class LShareReqQueue(ReqQueue):
 
-    def __init__(self, max_total_tokens, batch_max_tokens, running_max_req_size) -> None:
+    def __init__(self, max_total_tokens, batch_max_tokens, running_max_req_size, rate_limit) -> None:
         super().__init__(max_total_tokens, batch_max_tokens, running_max_req_size)
         self.abort_req_list: List[str] = []
         self.req_time_stamp = []
@@ -20,7 +20,8 @@ class LShareReqQueue(ReqQueue):
         self.apprx_bs = self.init_bs
         self.last_req_num = 0
         self.last_time = time.time()
-        self.rate_limit = 30 # per minute
+        assert rate_limit is not None, "Please specify the rate limit for RPM scheduler"
+        self.rate_limit = rate_limit # per minute
         self.all_req_time_stamp = {}
         self.total_aborted = {}
         
@@ -104,4 +105,3 @@ class LShareReqQueue(ReqQueue):
 
     def update_counter(self, current_batch: Batch):
         pass
-

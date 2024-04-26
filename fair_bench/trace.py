@@ -331,7 +331,7 @@ def get_real_requests(trace_file, req_rate, duration, base_model, adapter_dirs, 
     model_mapping = generate_model_mapping(conversations, adapter_dirs)
     conversations = sort_and_rescale_by_req_time(conversations, duration)
     reqs = parse_into_req(base_model, conversations, model_mapping, tokenizer)
-    return model_mapping.values(), reqs
+    return list(model_mapping.values()), reqs
 
 
 # functions below are used to generate real requests
@@ -394,7 +394,7 @@ def parse_into_req(base_model, conversations, model_mapping, tokenizer):
         output_len = len(tokenizer(conv["conversation"][1]["content"]).input_ids)
         
         req = Request(req_id=idx, model_dir=base_model, adapter_dir=name, 
-              prompt=conv["conversation"][0]["content"], prompt_len=prompt_len,
+              prompt=dummy_prompt(prompt_len), prompt_len=prompt_len,
               output_len=output_len, req_time=conv["tstamp"])
         reqs.append(req)
     # print(reqs)

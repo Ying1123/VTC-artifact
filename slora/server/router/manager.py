@@ -48,7 +48,7 @@ def get_scheduler(input_params, adapter_dirs):
     elif input_params.scheduler == "lshare_fair":
         assert input_params.enable_abort, "lshare_fair must be used with --enable-abort flag"
         return LShareReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
-                             input_params.running_max_req_size)
+                             input_params.running_max_req_size, input_params.rate_limit)
     elif input_params.scheduler == "pets":
         return PETSReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
                             input_params.running_max_req_size)
@@ -417,6 +417,7 @@ def start_router_process(args, router_port, detokenization_port, model_rpc_ports
                                bmm=args.bmm,
                                no_lora=args.no_lora,
                                fair_weights=args.fair_weights,
+                               rate_limit=args.rate_limit,
                               )
 
     try:
