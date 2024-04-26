@@ -70,12 +70,19 @@ python plot_6.2.py
 python plot_6.2_work_diff.py
 ```
 Figure 3: `fair_bench/VTC/sec6.2_overload_service.pdf` and `fair_bench/plot/sec6.2_overload_acc_service_diff.pdf`
+
 Figure 4: `fair_bench/VTC/sec6.2_proportional_service.pdf` and `fair_bench/VTC/sec6.2_proportional_response_time.pdf`
+
 Figure 5: `fair_bench/VTC/sec6.2_on_off_less_service.pdf` and `fair_bench/VTC/sec6.2_on_off_less_response_time.pdf`
+
 Figure 6: `fair_bench/VTC/sec6.2_on_off_overload_service.pdf` and `fair_bench/VTC/sec6.2_on_off_overload_response_time.pdf`
+
 Figure 7: `fair_bench/VTC/sec6.2_poisson_short_long_service.pdf` and `fair_bench/plot/sec6.2_poisson_short_long_acc_service_diff.pdf`
+
 Figure 8: `fair_bench/VTC/sec6.2_poisson_short_long_2_service.pdf` and `fair_bench/plot/sec6.2_poisson_short_long_2_acc_service_diff.pdf`
+
 Figure 9: `fair_bench/VTC/sec6.2_increase_service.pdf` and `fair_bench/VTC/sec6.2_increase_response_time.pdf`
+
 Figure 10: `fair_bench/VTC/sec6.2_dist_shift_service.pdf` and `fair_bench/LCF/sec6.2_dist_shift_service.pdf`
 
 
@@ -145,9 +152,12 @@ python run_exp.py --suite real --output FCFS/all_results_real.jsonl
 ```
 cd S-LoRA-fair/fair_bench/plot
 python plot_6.3_real.py
+python plot_6.3_calculate_stats_with_abort.py
 ```
 Figure 11: `fair_bench/VTC/sec6.3_real_response_time.pdf`, `fair_bench/FCFS/sec6.3_real_response_time.pdf`
+
 Figure 12: `fair_bench/LShare/rpm5/sec6.3_real_response_time.pdf`, `fair_bench/LShare/rpm10/sec6.3_real_response_time.pdf`, `fair_bench/LShare/rpm15/sec6.3_real_response_time.pdf`, `fair_bench/LShare/rpm20/sec6.3_real_response_time.pdf`
+
 Figure 13: `fair_bench/LShare/LShare_overall_throughput.pdf`
 
 **Note**: We lost the original trace file, so the current trace file is resampled from a different range, which is different with the one we used for the submission. The plots are then looks different with the ones in the paper. The trends and conclusion are maintained same.
@@ -191,5 +201,9 @@ Figure 14: `fair_bench/plot/sec6.4_overload-s4_acc_service_diff_mem_pool.pdf` an
 
 ## Comments
 The configurations for experiments are in `exp_suite.py`.
+
 The experiments are run on the S-LoRA runtime, in which different users are identified by different LoRA adapters. But the LoRA computations have been turned off for a vanilla evaluation, since this paper has no assumption of using LoRA adapters. This is controlled by the `--no-lora` option in `launch_server.py`.
+
 The real trace file is masked. The timestamps and sequence lengths are real, but the prompts are replaced with "Hello Hello Hello ..." for protecting privacy.
+
+We lost the original trace file for real world (chatbot arena) experiments, so the current trace file is resampled from a different time range, which is different with the one we used for the submission. The plots are then looks different with the ones in the paper. The trends and conclusion are maintained same.
