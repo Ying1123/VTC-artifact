@@ -6,7 +6,7 @@ Hardware and software requirements:
 
 Install the S-LoRA runtime with VTC and baseline schedulers:
 ```
-cd S-LoRA-fair
+cd VTC-artifact
 pip install -e .
 ```
 
