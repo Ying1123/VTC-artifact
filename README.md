@@ -148,13 +148,16 @@ We also learned a lot from the following projects when developing S-LoRA.
 - [PEFT](https://github.com/huggingface/peft.git)
 - [vLLM](https://github.com/vllm-project/vllm)
 
-## Roadmap
-- [ ] Release tensor parallelism implementation
-- [ ] Clean up reproducible scripts
-- [ ] More user-friendly API/frontend
-- [ ] More model support
 
-## Citation
+## Citations
+```
+@article{sheng2023fairness,
+  title={Fairness in serving large language models},
+  author={Sheng, Ying and Cao, Shiyi and Li, Dacheng and Zhu, Banghua and Li, Zhuohan and Zhuo, Danyang and Gonzalez, Joseph E and Stoica, Ion},
+  journal={arXiv preprint arXiv:2401.00588},
+  year={2023}
+}
+```
 ```bibtex
 @misc{sheng2023slora,
       title={S-LoRA: Serving Thousands of Concurrent LoRA Adapters}, 
