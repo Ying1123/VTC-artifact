@@ -1,4 +1,9 @@
-# S-LoRA: Serving Thousands of Concurrent LoRA Adapters [[paper](https://arxiv.org/abs/2311.03285)]
+# VTC Artifact for "Fairness in Serving Large Language Models [[paper](https://arxiv.org/abs/2401.00588)]"
+Experiments instructions in `fair_bench/README.md`.
+The prototype is build on top of S-LoRA, which is described below.
+
+
+# S-LoRA: Serving Thousands of Concurrent LoRA Adapters [[paper](https://arxiv.org/abs/2311.03285)][[code](https://github.com/S-LoRA/S-LoRA)]
 
 <p align="center">
 <img src="figures/serving_perf.png" alt="perf" width="700"/>

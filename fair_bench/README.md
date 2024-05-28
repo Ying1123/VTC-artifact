@@ -14,7 +14,7 @@ pip install -e .
 ## Section 5.2 Synthetic Workload
 1. Launch the server with Llama-2-7b on an AWS instance of A10G(24GB) GPU using VTC scheduler.
 ```
-cd S-LoRA-fair/fair_bench
+cd VTC-artifact/fair_bench
 python launch_server.py
 ```
 Run experiments with synthetic workload.
