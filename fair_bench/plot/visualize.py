@@ -35,7 +35,8 @@ def get_req_rate_over_time(responses, T, window, x_ticks, users):
                     req_time = response["req_time"]
                     num_token = response["output_len"]
                     if l <= req_time and req_time <= r:
-                        y[-1][i] += num_token
+                        # y[-1][i] += num_token
+                        y[-1][i] += response["prompt_len"] + 2 * response["output_len"]
             y[-1][i] /= window
     return y
 
