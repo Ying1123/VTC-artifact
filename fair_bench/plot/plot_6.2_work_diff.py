@@ -1,5 +1,6 @@
 import argparse
 import json
+import numpy as np
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
@@ -9,8 +10,10 @@ from visualize import (get_req_rate_over_time, get_throughput_over_time, get_ser
                        get_response_time_over_time, to_client_name,
                        FONTSIZE, MARKERSIZE, legend_x, legend_y, ylabel_x, ylabel_y)
 
+
 def cost_func(input_len, output_len):
     return input_len + 2*output_len
+
 
 def get_acc_service_diff_over_time(responses, T, window, x_ticks, users):
     y = []
@@ -34,6 +37,36 @@ def get_acc_service_diff_over_time(responses, T, window, x_ticks, users):
     for i in range(len(x_ticks)):
         max_diff.append(max([y[j][i] for j in range(len(users))]) - min([y[j][i] for j in range(len(users))]))
     return max_diff
+
+
+def get_service_diff_over_time(responses, T, window, x_ticks, users, req_rate):
+    y = []
+    print(f"there are {len(users)} users")
+    for i, user_name in enumerate(users):
+        y.append([0] * len(x_ticks))
+        for i, x in enumerate(x_ticks):
+            l = x - window / 2
+            r = x + window / 2
+            for response in responses:
+                if response["adapter_dir"] == user_name:
+                    start_time = response["req_time"] + response["first_token_latency"]
+                    end_time = response["req_time"] + response["request_latency"]
+                    if end_time < 1:
+                        continue
+                    service = cost_func(response['prompt_len'],response["output_len"])
+                    overlap = max(min(r, end_time) - max(l, start_time), 0)
+                    y[-1][i] += service * overlap / (end_time - start_time)
+            y[-1][i] /= window
+    # compute max difference in service over time
+    max_diffs = []
+    for i in range(len(x_ticks)):
+        max_service = max([y[j][i] for j in range(len(users))])
+        max_diff = float("-inf")
+        for j in range(len(users)):
+            max_diff = max(max_diff, min(max_service - y[j][i], req_rate[j][i] - y[j][i]))
+        max_diffs.append(max_diff)
+    return max_diffs
+
 
 def plot(baslines, x, ys, x_label, y_label, figname):
     FONTSIZE = 20
@@ -73,6 +106,29 @@ def plot(baslines, x, ys, x_label, y_label, figname):
     print(f"Saved figure to {figname}")
 
 
+def gen_quant_fairness_table(schedulers, service_diffs, figname):
+    tab = (
+        "\\begin{tabular}{c|ccc}\n"
+        "\\toprule\n"
+        "Scheduler & Max Diff & Avg Diff & Diff Var\\ \\ \n"
+        "\midrule\n"
+    )
+    for i, scheduler in enumerate(schedulers):
+        max_diff = max(service_diffs[i])
+        avg_diff = np.mean(service_diffs[i])
+        diff_var = np.var(service_diffs[i])
+        tab += (
+            f"{scheduler} & {max_diff} & {avg_diff} & {diff_var} \\ \\ \n"
+        )
+    tab += (
+        "\\bottomrule\n"
+        "\\end{tabular}"
+    )
+    with open(f"{figname}.tex", "w") as f:
+        f.write(tab)
+    print(f"Write tex to {figname}.tex")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", type=str, default="dist_shift")
@@ -83,6 +139,7 @@ if __name__ == "__main__":
     
     for workload in workloads:
         acc_services_diffs = []
+        service_diffs = []
         if workload == 'poisson_short_long' or workload == 'poisson_short_long_2' or workload == 'overload':
             baselines = ['VTC','FCFS']
         else:
@@ -110,8 +167,15 @@ if __name__ == "__main__":
                 x_ticks = x_ticks[1:]
 
                 users = sorted(list(set([response["adapter_dir"] for response in responses])))
+                req_rate = get_req_rate_over_time(responses, T, window, x_ticks, users)
                 acc_service_diff = get_acc_service_diff_over_time(responses, T, window, x_ticks, users)
                 acc_services_diffs.append(acc_service_diff)
+                service_diff = get_service_diff_over_time(
+                        responses, T, window, x_ticks, users, req_rate)
+                service_diffs.append(service_diff)
 
         # plot
         plot(baselines, x_ticks, acc_services_diffs, "Time (s)", "Absolute Difference in Service", f"sec6.2_{workload}_acc_service_diff")
+
+        gen_quant_fairness_table(baselines, service_diffs, f"{workload}_quant_fairness")
+
