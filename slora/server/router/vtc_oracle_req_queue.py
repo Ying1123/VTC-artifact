@@ -10,7 +10,7 @@ from slora.utils.infer_utils import  calculate_time
 from slora.server.router.req_queue import ReqQueue
 
 
-class VTCLenPredictReqQueue(ReqQueue):
+class VTCOracleReqQueue(ReqQueue):
 
     def __init__(self, max_total_tokens, batch_max_tokens, running_max_req_size,
                  adapter_dirs, fair_weights,
@@ -19,8 +19,6 @@ class VTCLenPredictReqQueue(ReqQueue):
         self.input_price = input_price
         self.output_price = output_price
         self.served = {}
-        self.predict_len = {}
-        self.predict_window = 5
         self.user_req_list = {}
 
         self.adapter_dirs = adapter_dirs
@@ -39,7 +37,6 @@ class VTCLenPredictReqQueue(ReqQueue):
         if req.adapter_dir not in self.user_req_list:
             self.user_req_list[req.adapter_dir] = deque([req])
             self.served[req.adapter_dir] = 0
-            self.predict_len[req.adapter_dir] = 0
         else:
             self.user_req_list[req.adapter_dir].append(req)
 
@@ -123,10 +120,10 @@ class VTCLenPredictReqQueue(ReqQueue):
                     weight = self.fairw[adapter_dir]
                     self.served[adapter_dir] += (
                             req.input_len * self.input_price / weight +
-                            self.predict_len[adapter_dir] * self.output_price / weight)
+                            req.max_output_len * self.output_price / weight)
                     active_served[adapter_dir] += (
                             req.input_len * self.input_price / weight +
-                            self.predict_len[adapter_dir] * self.output_price / weight)
+                            req.max_output_len * self.output_price / weight)
                 else:
                     break
             else:
@@ -142,21 +139,7 @@ class VTCLenPredictReqQueue(ReqQueue):
 
     
     def update_counter(self, current_batch: Batch):
-        for req in current_batch.reqs:
-            if len(req.output_ids) > self.predict_len[req.adapter_dir]:
-                self.served[req.adapter_dir] += (
-                        1 * self.output_price / self.fairw[req.adapter_dir])
-            if req.has_generate_finished:
-                if len(req.output_ids) < self.predict_len[req.adapter_dir]:
-                    delta = self.predict_len[req.adapter_dir] - len(req.output_ids)
-                    self.served[req.adapter_dir] -= (
-                            delta * self.output_price / self.fairw[req.adapter_dir])
-                # update prediction
-                old_predict = self.predict_len[req.adapter_dir]
-                window = self.predict_window
-                self.predict_len[req.adapter_dir] = (
-                        old_predict * (window - 1) + len(req.output_ids)) / window
-
+        pass
 
     def next_batch(self):
         raise NotImplementedError()

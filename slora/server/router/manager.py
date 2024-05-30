@@ -26,6 +26,7 @@ from slora.server.router.cluster_req_queue import ClusterReqQueue
 from slora.server.router.vtc_max_req_queue import VTCMaxReqQueue
 from slora.server.router.vtc_req_queue import VTCReqQueue
 from slora.server.router.vtc_pred_len_req_queue import VTCLenPredictReqQueue
+from slora.server.router.vtc_oracle_req_queue import VTCOracleReqQueue
 from slora.server.router.lcf_req_queue import LCFReqQueue
 from slora.server.router.mdrr_req_queue import MDRRReqQueue
 from slora.server.router.pets_req_queue import PETSReqQueue
@@ -45,6 +46,10 @@ def get_scheduler(input_params, adapter_dirs):
                            input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
     elif input_params.scheduler == "vtc_len_predict":
         return VTCLenPredictReqQueue(
+                input_params.max_total_token_num, input_params.batch_max_tokens,
+                input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
+    elif input_params.scheduler == "vtc_oracle":
+        return VTCOracleReqQueue(
                 input_params.max_total_token_num, input_params.batch_max_tokens,
                 input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
     elif input_params.scheduler == "mdrr_fair":
