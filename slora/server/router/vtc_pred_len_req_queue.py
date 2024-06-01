@@ -153,9 +153,12 @@ class VTCLenPredictReqQueue(ReqQueue):
                             delta * self.output_price / self.fairw[req.adapter_dir])
                 # update prediction
                 old_predict = self.predict_len[req.adapter_dir]
-                window = self.predict_window
-                self.predict_len[req.adapter_dir] = (
-                        old_predict * (window - 1) + len(req.output_ids)) / window
+                if old_predict == 0:
+                    self.predict_len[req.adapter_dir] = len(req.output_ids)
+                else:
+                    window = self.predict_window
+                    self.predict_len[req.adapter_dir] = (
+                            old_predict * (window - 1) + len(req.output_ids)) / window
 
 
     def next_batch(self):

@@ -332,8 +332,8 @@ class RouterManager:
 
     async def _handle_finish_req(self, batch: Batch, has_new_finished_req, minibatch=False):
         if has_new_finished_req:
-            batch.filter_finished()
             self.req_queue.update_counter(batch)
+            batch.filter_finished()
 
             # unmerge adapter from base model
             if self.input_params.scheduler == "peft" and batch.is_clear():
