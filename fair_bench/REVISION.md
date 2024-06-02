@@ -53,8 +53,16 @@ python launch_server.py --num-adapter 50 --enable-abort --scheduler lshare_fair 
 python run_exp.py --suite real --output LShare/rpm5/all_results_real.jsonl
 ```
 
-Plot:
+## Weighted VTC
+```
+python launch_server.py --scheduler vtc_fair --fair-weights 1 2 3 4
+python run_exp.py --suite overload-weighted --output WVTC/all_results_overload-weighted.jsonl
+
+python launch_server.py --scheduler vtc_fair
+python run_exp.py --suite overload-weighted --output VTC/all_results_overload-weighted.jsonl
+```
+
+## Plot:
 ```
 python plot_revision.py
 ```
-
