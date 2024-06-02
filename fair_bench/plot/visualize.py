@@ -22,6 +22,9 @@ def to_client_name(adapter_name):
         return "Client 2"
     if adapter_name == "dummy-lora-7b-rank-8-2":
         return "Client 3"
+    if adapter_name == "dummy-lora-7b-rank-8-3":
+        return "Client 4"
+    return adapter_name
 
 
 def get_req_rate_over_time(responses, T, window, x_ticks, users, warmup=0):

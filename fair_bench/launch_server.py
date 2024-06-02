@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("--num-token", type=int, default=10000)
 
     parser.add_argument("--scheduler", type=str, default="vtc_fair")
-    parser.add_argument("--fair-weights", type=int, default=[], action="append")
+    parser.add_argument("--fair-weights", type=float, nargs="+", default=[1])
     parser.add_argument("--enable-abort", action="store_true")
     parser.add_argument("--rate-limit", type=int, default=None)
     parser.add_argument("--predict-range", type=float, default=0)
@@ -41,8 +41,9 @@ if __name__ == "__main__":
     for i in range(num_iter):
         for adapter_dir in adapter_dirs:
             cmd += f" --lora {adapter_dir}-{i}"
-    for x in args.fair_weights:
-        cmd += f" --fair-weights {x}"
+    cmd += " --fair-weights"
+    for w in args.fair_weights:
+        cmd += f" {w}"
 
     # print(cmd)
     os.system(cmd)
