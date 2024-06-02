@@ -34,12 +34,13 @@ def plot(baslines, x, ys, x_label, y_label, figname):
     for i, (name, y) in enumerate(zip(baslines, ys)):
         max_y = max(max_y, max(y))
         curves.append(ax.plot(x, y, color=f"C{i}", marker=markers[i], markersize=MARKERSIZE)[0])
-        legends.append(name)
+        legends.append(to_client_name(name))
 
     ax.grid(True, linestyle='-', linewidth=0.5, alpha=0.5, color="black")
     y_format = StrMethodFormatter("{x:.1f}")
 
     ax.set_xlim(1)
+    ax.set_ylim(0)
     ax.set_xlabel(x_label, fontsize=21)
     ax.tick_params(axis='both', which='major', labelsize=FONTSIZE, length=2, width=1)
     # ax.yaxis.set_major_formatter(y_format)
@@ -59,7 +60,7 @@ def plot(baslines, x, ys, x_label, y_label, figname):
 
 if __name__ == "__main__":
     # baselines = ['VTC','LCF','FCFS']
-    workloads = ["overload", "overload-multi", "real"]
+    workloads = ["overload", "overload-multi", "real", "overload-weighted"]
     
     for workload in workloads:
         acc_services_diffs = []
@@ -69,6 +70,8 @@ if __name__ == "__main__":
         elif workload in ["real"]:
             baselines = ["VTC", "VTC_oracle", "VTC_predict", "FCFS", "LCF",
                          "LShare/rpm30", "LShare/rpm20", "LShare/rpm5"]
+        elif workload in ["overload-weighted"]:
+            baselines = ["VTC", "WVTC"]
 
         throughputs = []
         for baseline in baselines:
@@ -105,12 +108,17 @@ if __name__ == "__main__":
             print("\n\nbaseline", baseline)
             service_diff = get_service_diff_over_time(responses, T, window, x_ticks, users, req_rate, warmup=warmup)
             service_diffs.append(service_diff)
+
             throughputs.append(get_overall_throughput(result))
-            # print(baseline, result["total_time"])
+            if workload in ["overload-weighted"]:
+                service = get_service_over_time(responses, T, window, x_ticks, users)
+                plot(users, x_ticks, service, "Time (s)", "Service",
+                     f"revision_{workload}_{baseline}_service")
 
         # plot
-        plot(baselines, x_ticks, acc_services_diffs, "Time (s)", "Absolute Difference in Service", f"revision_{workload}_acc_service_diff")
-
-        gen_quant_fairness_table(baselines, service_diffs, throughputs, f"{workload}_quant_fairness")
-        # print(service_diffs)
+        if workload in ["overload", "overload-multi"]:
+            plot(baselines, x_ticks, acc_services_diffs, "Time (s)",
+                 "Absolute Difference in Service", f"revision_{workload}_acc_service_diff")
+        if workload in ["overload", "overload-multi", "real"]:
+            gen_quant_fairness_table(baselines, service_diffs, throughputs, f"{workload}_quant_fairness")
 

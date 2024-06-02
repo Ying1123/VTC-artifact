@@ -73,6 +73,17 @@ paper_suite = {
         on_off = [-1],
         mode = ["uniform"],
     ),
+    "overload-weighted": BenchmarkConfig(
+        num_adapters = [4],
+        alpha = [-1],
+        req_rate = [[0.8, 0.8, 1.2, 1.6]],
+        cv = [-1],
+        duration = [60 * 6],
+        input_range = [[256, 257]],
+        output_range = [[256, 257]],
+        on_off = [-1],
+        mode = ["uniform"],
+    ),
     "overload-s4": BenchmarkConfig(
         num_adapters = [2],
         alpha = [-1],
