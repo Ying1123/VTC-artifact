@@ -51,7 +51,8 @@ def get_scheduler(input_params, adapter_dirs):
     elif input_params.scheduler == "vtc_oracle":
         return VTCOracleReqQueue(
                 input_params.max_total_token_num, input_params.batch_max_tokens,
-                input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
+                input_params.running_max_req_size, adapter_dirs,
+                input_params.fair_weights, input_params.predict_range)
     elif input_params.scheduler == "mdrr_fair":
         return MDRRReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
                             input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
@@ -429,6 +430,7 @@ def start_router_process(args, router_port, detokenization_port, model_rpc_ports
                                no_lora=args.no_lora,
                                fair_weights=args.fair_weights,
                                rate_limit=args.rate_limit,
+                               predict_range=args.predict_range,
                               )
 
     try:

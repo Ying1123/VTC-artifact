@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
                 responses = result["responses"]
                 # T = max([response["req_time"]+response['request_latency'] for response in responses])
-                T = max([response["req_time"] for response in responses])
-                T = int(T) / 10 * 10
+                # T = max([response["req_time"] for response in responses])
+                T = 600
                 num_x = 30
                 if workload == "proportional":
                     num_x = 20

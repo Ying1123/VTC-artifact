@@ -121,12 +121,13 @@ class VTCLenPredictReqQueue(ReqQueue):
                     self.user_req_list[adapter_dir].popleft()
                     # update fairness counter
                     weight = self.fairw[adapter_dir]
+                    req.predict_len = self.predict_len[adapter_dir]
                     self.served[adapter_dir] += (
                             req.input_len * self.input_price / weight +
-                            self.predict_len[adapter_dir] * self.output_price / weight)
+                            req.predict_len * self.output_price / weight)
                     active_served[adapter_dir] += (
                             req.input_len * self.input_price / weight +
-                            self.predict_len[adapter_dir] * self.output_price / weight)
+                            req.predict_len * self.output_price / weight)
                 else:
                     break
             else:
@@ -143,12 +144,12 @@ class VTCLenPredictReqQueue(ReqQueue):
     
     def update_counter(self, current_batch: Batch):
         for req in current_batch.reqs:
-            if len(req.output_ids) > self.predict_len[req.adapter_dir]:
+            if len(req.output_ids) > req.predict_len:
                 self.served[req.adapter_dir] += (
                         1 * self.output_price / self.fairw[req.adapter_dir])
             if req.has_generate_finished:
-                if len(req.output_ids) < self.predict_len[req.adapter_dir]:
-                    delta = self.predict_len[req.adapter_dir] - len(req.output_ids)
+                if len(req.output_ids) < req.predict_len:
+                    delta = req.predict_len - len(req.output_ids)
                     self.served[req.adapter_dir] -= (
                             delta * self.output_price / self.fairw[req.adapter_dir])
                 # update prediction

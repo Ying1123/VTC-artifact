@@ -17,6 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--fair-weights", type=int, default=[], action="append")
     parser.add_argument("--enable-abort", action="store_true")
     parser.add_argument("--rate-limit", type=int, default=None)
+    parser.add_argument("--predict-range", type=float, default=0)
     args = parser.parse_args()
 
     base_model = BASE_MODEL[args.model_setting]
@@ -34,6 +35,7 @@ if __name__ == "__main__":
         cmd += " --enable-abort"
     if args.rate_limit is not None:
         cmd += f" --rate-limit {args.rate_limit}"
+    cmd += f" --predict-range {args.predict_range}"
 
     num_iter = args.num_adapter // len(adapter_dirs) + 1
     for i in range(num_iter):
