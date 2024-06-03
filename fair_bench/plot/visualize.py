@@ -77,11 +77,18 @@ def get_overall_throughput(result):
     return num_token / result["total_time"]
 
 
-def cost_func(input_len, output_len):
-    return input_len + 2*output_len
+def cost_func(input_len, output_len, func_type="linear"):
+    if func_type == "linear":
+        return input_len + 2*output_len
+    elif func_type == "profile":
+        x, y = input_len, output_len
+        return (0.21001891 * x + 0.10075395 * y +
+                0.0039868 * x * y + 0.00324733 * y * y + 1.14601454)
+    else:
+        raise Exception(f"unrecognized cost function {func_type}")
 
 
-def get_service_over_time(responses, T, window, x_ticks, users):
+def get_service_over_time(responses, T, window, x_ticks, users, func_type="linear"):
     y = []
     for i, user_name in enumerate(users):
         y.append([0] * len(x_ticks))
@@ -96,7 +103,7 @@ def get_service_over_time(responses, T, window, x_ticks, users):
                         assert response["first_token_latency"] == -1, "first_token_latency should be -1 for aborted requests"
                         y[-1][i] += 0
                     else:
-                        service = cost_func(response['prompt_len'],response["output_len"])
+                        service = cost_func(response['prompt_len'],response["output_len"], func_type=func_type)
                         overlap = max(min(r, end_time) - max(l, start_time), 0)
                         y[-1][i] += service * overlap / (end_time - start_time)
             y[-1][i] /= window
@@ -105,7 +112,7 @@ def get_service_over_time(responses, T, window, x_ticks, users):
 
 def get_response_time_over_time(responses, T, window, x_ticks, users):
     y = []
-    for i, user_name in enumerate(users):
+    for j, user_name in enumerate(users):
         y.append([0] * len(x_ticks))
         for i, x in enumerate(x_ticks):
             l = x - window / 2
@@ -115,6 +122,8 @@ def get_response_time_over_time(responses, T, window, x_ticks, users):
                 if response["adapter_dir"] == user_name:
                     req_time = response["req_time"] + response["first_token_latency"]
                     response_time = response["first_token_latency"]
+                    # if j == 2 and req_time > 454 and req_time < 515:
+                    #     print(response)
                     if l <= req_time and req_time <= r:
                         if not response_time == -1: # for aborted requests
                             y[-1][i] += response_time
@@ -165,7 +174,7 @@ def get_acc_service_diff_over_time(responses, T, window, x_ticks, users, warmup=
     return max_diff
 
 
-def get_service_diff_over_time(responses, T, window, x_ticks, users, req_rate, warmup=0):
+def get_service_diff_over_time(responses, T, window, x_ticks, users, req_rate, warmup=0, func_type="linear"):
     y = []
     for i, user_name in enumerate(users):
         y.append([0] * len(x_ticks))
@@ -178,7 +187,7 @@ def get_service_diff_over_time(responses, T, window, x_ticks, users, req_rate, w
                     end_time = response["req_time"] + response["request_latency"]
                     if end_time < 1 or end_time - start_time < 1e-5:
                         continue
-                    service = cost_func(response['prompt_len'],response["output_len"])
+                    service = cost_func(response['prompt_len'], response["output_len"], func_type=func_type)
                     overlap = max(min(r, end_time) - max(l, start_time), 0)
                     y[-1][i] += service * overlap / (end_time - start_time)
             y[-1][i] /= window

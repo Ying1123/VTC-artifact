@@ -371,6 +371,8 @@ def main():
                         help="One or more fair weights")
     parser.add_argument("--rate-limit", type=int, default=None)
     parser.add_argument("--predict-range", type=float, default=0)
+    parser.add_argument("--cost-func", type=str, default="linear",
+                        choices=["linear", "profile"])
 
     # debug parameters
     # do not use no-lora-swap, does not rule out the swap over MemAllocator
