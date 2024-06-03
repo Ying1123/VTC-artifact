@@ -1,3 +1,5 @@
+All on A10G (24GB) Llama-2-7b
+
 ## VTC with Length Prediction (Synthetic)
 2 clients:
 ```
@@ -65,4 +67,10 @@ python run_exp.py --suite overload-weighted --output VTC/all_results_overload-we
 ## Plot:
 ```
 python plot_revision.py
+```
+
+## Generalized cost function
+Get cost function
+```
+python profile_cost_function.py
 ```

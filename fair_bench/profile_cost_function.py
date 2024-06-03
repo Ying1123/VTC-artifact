@@ -8,6 +8,8 @@ from collections import defaultdict
 from multiprocessing import Queue
 from tqdm import tqdm
 
+from scipy.optimize import curve_fit
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 
@@ -251,6 +253,7 @@ if __name__ == "__main__":
             f.write(json.dumps(cost))
     print(cost)
 
+    # Plot
     # cost[i][j]: (prefill time, decode time) for input length i and output length j
     x, y = [], []
     for input_len in cost.keys():
@@ -273,3 +276,25 @@ if __name__ == "__main__":
             y.append(decode_time)
         ys.append(y)
     plot(names, x, ys, "Number of output tokens", "Decode time (s)", "decode_cost")
+
+    # Get function
+    x, y, h = [], [], []
+    for input_key in cost.keys():
+        for output_key in cost[input_key].keys():
+            bs, prefill_time, decode_time = cost[input_key][output_key]
+            x.append(int(input_key))
+            y.append(int(output_key))
+            h.append((prefill_time + decode_time) * 1000)
+
+    def cost_func(X, a, b, c, d, e):
+        x, y = X
+        return a * x + b * y + c * x * y + d * y * y + e
+
+    initial_guess = [1, 1, 1, 1, 1]
+    popt, pcov = curve_fit(cost_func, (x, y), h, p0=initial_guess)
+    print("Fitted parameters: a, b, c, d, e = ", popt)
+
+    for i in range(len(x)):
+        x_test, y_test = x[i], y[i]
+        h_pred = cost_func((x_test, y_test), *popt)
+        print(f"x, y, h, h_pred: {x_test}, {y_test}, {h[i]:.3f}, {h_pred:.3f}")
