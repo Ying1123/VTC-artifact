@@ -64,13 +64,41 @@ python launch_server.py --scheduler vtc_fair
 python run_exp.py --suite overload-weighted --output VTC/all_results_overload-weighted.jsonl
 ```
 
-## Plot:
-```
-python plot_revision.py
-```
-
 ## Generalized cost function
 Get cost function
 ```
 python profile_cost_function.py
+```
+Run with real trace
+```
+python launch_server.py --num-adapter 50 --scheduler vtc_fair --cost-func profile
+python run_exp.py --suite real --output VTC_profile/all_results_real.jsonl
+
+python launch_server.py --num-adapter 50 --scheduler vtc_oracle --cost-func profile
+python run_exp.py --suite real --output VTC_oracle_profile/all_results_real.jsonl
+
+python launch_server.py --num-adapter 50 --scheduler vtc_len_predict --cost-func profile
+python run_exp.py --suite real --output VTC_predict_profile/all_results_real.jsonl
+```
+Run with synthetic (overload) trace
+```
+python launch_server.py --scheduler vtc_fair --cost-func profile
+python run_exp.py --suite overload --output VTC_profile/all_results_overload.jsonl
+
+python launch_server.py --scheduler vtc_oracle --cost-func profile
+python run_exp.py --suite overload --output VTC_oracle_profile/all_results_overload.jsonl
+
+# FCFS (should already exists in original experiments)
+python launch_server.py --scheduler slora
+python run_exp.py --suite overload --output FCFS/all_results_overload.jsonl
+```
+
+## Plot (for all experiments):
+For linear cost function
+```
+python plot_revision.py
+```
+For profiled cost function
+```
+python plot_revision_profile.py
 ```

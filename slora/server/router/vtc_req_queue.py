@@ -13,7 +13,7 @@ from slora.server.router.req_queue import ReqQueue
 class VTCReqQueue(ReqQueue):
 
     def __init__(self, max_total_tokens, batch_max_tokens, running_max_req_size,
-                 adapter_dirs, fair_weights,
+                 adapter_dirs, fair_weights, cost_func,
                  input_price=1, output_price=2) -> None:
         super().__init__(max_total_tokens, batch_max_tokens, running_max_req_size)
         self.input_price = input_price
@@ -23,6 +23,7 @@ class VTCReqQueue(ReqQueue):
 
         self.adapter_dirs = adapter_dirs
         self.fair_weights = fair_weights
+        self.cost_func = cost_func
 
         self.fairw = {}
         for i in range(len(adapter_dirs)):
@@ -117,8 +118,15 @@ class VTCReqQueue(ReqQueue):
                     new_batch_total_tokens += req.input_len
                     self.user_req_list[adapter_dir].popleft()
                     # update fairness counter
-                    self.served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
-                    active_served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
+                    if self.cost_func == "linear":
+                        self.served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
+                        active_served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
+                    elif self.cost_func == "profile":
+                        delta = self.cost_func_profile(req.input_len, 0) / self.fairw[adapter_dir]
+                        self.served[adapter_dir] += delta
+                        active_served[adapter_dir] += delta
+                    else:
+                        raise Exception("unrecognized cost function")
                 else:
                     break
             else:
@@ -135,7 +143,13 @@ class VTCReqQueue(ReqQueue):
     
     def update_counter(self, current_batch: Batch):
         for req in current_batch.reqs:
-            self.served[req.adapter_dir] += 1 * self.output_price / self.fairw[req.adapter_dir]
+            if self.cost_func == "linear":
+                self.served[req.adapter_dir] += 1 * self.output_price / self.fairw[req.adapter_dir]
+            elif self.cost_func == "profile":
+                cur_output_len = len(req.output_ids)
+                delta = (self.cost_func_profile(req.input_len, cur_output_len) -
+                         self.cost_func_profile(req.input_len, cur_output_len - 1)) / self.fairw[req.adapter_dir]
+                self.served[req.adapter_dir] += delta
 
 
     def next_batch(self):
