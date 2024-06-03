@@ -3,7 +3,6 @@ import os
 import json
 import sys
 import time
-import torch
 from collections import defaultdict
 from multiprocessing import Queue
 from tqdm import tqdm
@@ -12,12 +11,6 @@ from scipy.optimize import curve_fit
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
-
-from slora.models.llama2.model import Llama2TpPartModel
-from slora.server.input_params import InputParams
-from slora.server.router.model_infer.model_rpc import start_model_process, ModelRpcServer
-sys.path.append("../test/model")
-from model_infer import tppart_model_infer
 
 
 def run(engine, batch_size, input_len, output_len, warmup=True):
@@ -192,59 +185,66 @@ def plot(names, x, ys, x_label, y_label, figname):
 
 
 if __name__ == "__main__":
-    # model_dir = "huggyllama/llama-7b"
-    # model_class = Llama2TpPartModel
-    # bs= 10
-    # input_len = 256
-    # output_len = 256
-    # # not working for dummy model
-    # tppart_model_infer(rank_id=0, world_size=1, ans_queue=Queue(),
-    #                    model_dir=model_dir, model_class=model_class,
-    #                    batch_size=bs, input_len=input_len, output_len=output_len)
-
-    # profile on A10G (24GB)
-    weight_dir = "huggyllama/llama-7b"
-    max_total_token_num = 10000
-
-    scheduler = "vtc_fair"
-    max_req_total_len = 2048 + 1024 # default
-    batch_max_tokens = int(1 / 6 * max_total_token_num)
-    batch_max_tokens = max(batch_max_tokens, max_req_total_len)
-    input_params = InputParams(max_req_total_len=max_req_total_len,
-                               # kv cache manager parameters
-                               max_total_token_num=max_total_token_num,
-                               pool_size_lora=0,
-                               batch_max_tokens=batch_max_tokens,
-                               running_max_req_size=1000,
-                               # heuristic
-                               swap=True,
-                               prefetch=False,
-                               prefetch_size=0,
-                               scheduler=scheduler,
-                               profile=False,
-                               batch_num_adapters=None,
-                               enable_abort=None,
-                               # mem_ratio=args.mem_ratio,
-                               dummy=True,
-                               no_lora_swap=False,
-                               no_lora_compute=False,
-                               no_kernel=False,
-                               no_mem_pool=False,
-                               bmm=False,
-                               no_lora=True,
-                               fair_weights=[1],
-                               rate_limit=None,
-                               predict_range=0,
-                              )
-
-    model = ModelRpcServer()
-    model.exposed_init_model(0, 1, weight_dir, adapter_dirs=[], max_total_token_num=max_total_token_num,
-            load_way="HF", mode=[], input_params=input_params, prefetch_stream=None)
-
     if os.path.exists("cost_profile.json"):
         with open("cost_profile.json", "r") as f:
             cost = json.loads(f.readline())
     else:
+        import torch
+        from slora.models.llama2.model import Llama2TpPartModel
+        from slora.server.input_params import InputParams
+        from slora.server.router.model_infer.model_rpc import start_model_process, ModelRpcServer
+        sys.path.append("../test/model")
+        from model_infer import tppart_model_infer
+
+        # model_dir = "huggyllama/llama-7b"
+        # model_class = Llama2TpPartModel
+        # bs= 10
+        # input_len = 256
+        # output_len = 256
+        # # not working for dummy model
+        # tppart_model_infer(rank_id=0, world_size=1, ans_queue=Queue(),
+        #                    model_dir=model_dir, model_class=model_class,
+        #                    batch_size=bs, input_len=input_len, output_len=output_len)
+
+        # profile on A10G (24GB)
+        weight_dir = "huggyllama/llama-7b"
+        max_total_token_num = 10000
+
+        scheduler = "vtc_fair"
+        max_req_total_len = 2048 + 1024 # default
+        batch_max_tokens = int(1 / 6 * max_total_token_num)
+        batch_max_tokens = max(batch_max_tokens, max_req_total_len)
+        input_params = InputParams(max_req_total_len=max_req_total_len,
+                                   # kv cache manager parameters
+                                   max_total_token_num=max_total_token_num,
+                                   pool_size_lora=0,
+                                   batch_max_tokens=batch_max_tokens,
+                                   running_max_req_size=1000,
+                                   # heuristic
+                                   swap=True,
+                                   prefetch=False,
+                                   prefetch_size=0,
+                                   scheduler=scheduler,
+                                   profile=False,
+                                   batch_num_adapters=None,
+                                   enable_abort=None,
+                                   # mem_ratio=args.mem_ratio,
+                                   dummy=True,
+                                   no_lora_swap=False,
+                                   no_lora_compute=False,
+                                   no_kernel=False,
+                                   no_mem_pool=False,
+                                   bmm=False,
+                                   no_lora=True,
+                                   fair_weights=[1],
+                                   rate_limit=None,
+                                   predict_range=0,
+                                  )
+
+        model = ModelRpcServer()
+        model.exposed_init_model(0, 1, weight_dir, adapter_dirs=[], max_total_token_num=max_total_token_num,
+                load_way="HF", mode=[], input_params=input_params, prefetch_stream=None)
+
         tic = time.time()
         cost = profile(model)
         print(f"profiling takes time: {time.time() - tic:.2f}")
