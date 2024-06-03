@@ -102,3 +102,9 @@ class ReqQueue:
             return next_batch
         else:
             return None
+
+
+    def cost_func_profile(self, num_input_token, num_output_token):
+        x, y = num_input_token, num_output_token
+        return (0.21001891 * x + 0.10075395 * y +
+                0.0039868 * x * y + 0.00324733 * y * y + 1.14601454)

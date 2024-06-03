@@ -18,6 +18,8 @@ if __name__ == "__main__":
     parser.add_argument("--enable-abort", action="store_true")
     parser.add_argument("--rate-limit", type=int, default=None)
     parser.add_argument("--predict-range", type=float, default=0)
+    parser.add_argument("--cost-func", type=str, default="linear",
+                        choices=["linear", "profile"])
     args = parser.parse_args()
 
     base_model = BASE_MODEL[args.model_setting]
@@ -30,6 +32,7 @@ if __name__ == "__main__":
     cmd += " --swap"
     cmd += f" --scheduler {args.scheduler}"
     cmd += " --no-lora"
+    cmd += f" --cost-func {args.cost_func}"
 
     if args.enable_abort:
         cmd += " --enable-abort"
