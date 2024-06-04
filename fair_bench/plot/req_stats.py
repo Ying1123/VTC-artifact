@@ -9,8 +9,10 @@ def bar_plot(data, xlabel, ylabel, figname):
     frequency = dict(zip(unique, counts))
 
     plt.bar(frequency.keys(), frequency.values())
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel(xlabel, fontsize=24)
+    plt.ylabel(ylabel, fontsize=24)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     plt.grid(True)
 
     figname = f"{figname}.pdf"
@@ -29,6 +31,8 @@ if __name__ == "__main__":
     output_lens = [x["output_len"] for x in responses]
     # print(sorted(input_lens))
     # print(sorted(output_lens))
+    print(np.mean(input_lens), np.min(input_lens), np.max(input_lens))
+    print(np.mean(output_lens), np.min(output_lens), np.max(output_lens))
 
     bar_plot(input_lens, xlabel="Input length", ylabel="Frequency", figname="input_len_distribution")
     bar_plot(output_lens, xlabel="Output length", ylabel="Frequency", figname="output_len_distribution")
