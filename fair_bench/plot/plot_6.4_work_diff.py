@@ -4,6 +4,10 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 # from plot.plot_utils import plot
 from visualize import (get_req_rate_over_time, get_throughput_over_time, get_service_over_time,
                        get_response_time_over_time, to_client_name,
@@ -35,7 +39,7 @@ def get_acc_service_diff_over_time(responses, T, window, x_ticks, users):
     return max_diff
 
 def plot_boxplot(baselines, ys, y_label, figname):
-    FONTSIZE = 20
+    FONTSIZE = 26
     ylabel_x = 0
     ylabel_y = 0.5
     colors = ['pink', 'lightblue', 'lightgreen', 'lavender', 'tan', 'lightgrey']
@@ -49,11 +53,11 @@ def plot_boxplot(baselines, ys, y_label, figname):
 
     ax.grid(True, linestyle='-', linewidth=0.5, alpha=0.5, color="black")
     baselines_format = [baseline.split('-')[0] + '-' + baseline.split('-')[1] + '\n' + baseline.split('-')[-1] for baseline in baselines]
-    plt.xticks([1, 2, 3, 4, 5, 6], baselines_format, fontsize=16)
+    plt.xticks([1, 2, 3, 4, 5, 6], baselines_format, fontsize=FONTSIZE - 2)
     ax.set_ylim(0)
     ax.tick_params(axis='y',labelsize=16)
-    ax.set_xlabel("Req Len & Mem Pool Size", fontsize=21)
-    fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=21)
+    ax.set_xlabel("Req Len & Mem Pool Size", fontsize=FONTSIZE)
+    fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=FONTSIZE)
     fig.subplots_adjust(wspace=0.2)
 
     # Save figure

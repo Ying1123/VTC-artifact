@@ -3,14 +3,18 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 
 def bar_plot(data, xlabel, ylabel, figname):
     unique, counts = np.unique(data, return_counts=True)
     frequency = dict(zip(unique, counts))
 
     plt.bar(frequency.keys(), frequency.values())
-    plt.xlabel(xlabel, fontsize=24)
-    plt.ylabel(ylabel, fontsize=24)
+    plt.xlabel(xlabel, fontsize=26)
+    plt.ylabel(ylabel, fontsize=26)
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
     plt.grid(True)

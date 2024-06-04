@@ -4,6 +4,10 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 # from plot.plot_utils import plot
 from visualize import (get_req_rate_over_time, get_throughput_over_time, get_service_over_time,
                        get_response_time_over_time, to_client_name,
@@ -18,11 +22,11 @@ distinct_colors = ["rosybrown", "sienna", "sandybrown", "gold", "darkgreen", "tu
 
 
 def plot(baslines, x, ys, x_label, y_label, figname):
-    FONTSIZE = 20
+    FONTSIZE = 26
     MARKERSIZE = 6
     legend_x = 0.5
     legend_y = 1.1
-    ylabel_x = 0
+    ylabel_x = -0.04
     ylabel_y = 0.5
     markers = ['v','s','o','+','s','D', 'P','X']
 
@@ -45,8 +49,9 @@ def plot(baslines, x, ys, x_label, y_label, figname):
     ax.set_xlabel(x_label, fontsize=21)
     ax.tick_params(axis='both', which='major', labelsize=FONTSIZE, length=2, width=1)
     # ax.yaxis.set_major_formatter(y_format)
-    # fig.legend(curves, legends, loc="upper center", bbox_to_anchor=(legend_x, legend_y),
-    #            ncol=len(legends) // min(2, len(legends) // 4 + 1), fontsize=18)
+    if "acc_service" in figname:
+        fig.legend(curves, legends, loc="upper center", bbox_to_anchor=(legend_x, legend_y),
+                   ncol=4, fontsize=18)
     fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=21)
     fig.subplots_adjust(wspace=0.2)
 
@@ -71,6 +76,7 @@ if __name__ == "__main__":
             baselines = ["FCFS", "VTC_profile", "VTC_oracle_profile"]
 
         throughputs = []
+        acc_services_diffs = []
         for baseline in baselines:
             path = f"../{baseline}/all_results_{workload}.jsonl"
             with open(path, "r") as f:
@@ -108,7 +114,14 @@ if __name__ == "__main__":
             plot(users, x_ticks, response_time, "Time (s)", "Response Time (s)",
                  f"revision_profile_h_{workload}_{baseline_name}_response_time")
 
+            acc_service_diff = get_acc_service_diff_over_time(responses, T, window, x_ticks, users, warmup=warmup)
+            acc_services_diffs.append(acc_service_diff)
+ 
         if workload in ["real", "overload"]:
             print(baselines)
             gen_quant_fairness_table(baselines, service_diffs, throughputs, f"revision_profile_h_{workload}_quant_fairness")
+        # not indicative (not continuously overloaded, so not bounded)
+        # plot(baselines, x_ticks, acc_services_diffs, "Time (s)",
+        #      "Absolute Difference in Service", f"revision_profile_{workload}_acc_service_diff")
+ 
 

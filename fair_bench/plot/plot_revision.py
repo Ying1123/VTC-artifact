@@ -4,6 +4,10 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 # from plot.plot_utils import plot
 from visualize import (get_req_rate_over_time, get_throughput_over_time, get_service_over_time,
                        get_response_time_over_time, to_client_name,
@@ -19,11 +23,15 @@ def cost_func(input_len, output_len):
 
 
 def plot(baslines, x, ys, x_label, y_label, figname):
-    FONTSIZE = 20
+    FONTSIZE = 26
     MARKERSIZE = 8
     legend_x = 0.5
-    legend_y = 1.1
+    legend_y = 1.2
+    if "acc_service" in figname:
+        legend_y = 1.1
     ylabel_x = 0
+    if "acc_service" in figname:
+        ylabel_x = -0.14
     ylabel_y = 0.5
     markers = ['v','s','o','+','s','D', 'P','X']
 
@@ -41,12 +49,12 @@ def plot(baslines, x, ys, x_label, y_label, figname):
 
     ax.set_xlim(1)
     ax.set_ylim(0)
-    ax.set_xlabel(x_label, fontsize=21)
+    ax.set_xlabel(x_label, fontsize=FONTSIZE)
     ax.tick_params(axis='both', which='major', labelsize=FONTSIZE, length=2, width=1)
     # ax.yaxis.set_major_formatter(y_format)
     fig.legend(curves, legends, loc="upper center", bbox_to_anchor=(legend_x, legend_y),
                ncol=len(legends) // min(2, len(legends) // 4 + 1), fontsize=18)
-    fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=21)
+    fig.text(ylabel_x, ylabel_y, y_label, va='center', rotation='vertical', fontsize=FONTSIZE)
     fig.subplots_adjust(wspace=0.2)
 
     # Save figure

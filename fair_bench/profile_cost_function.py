@@ -12,6 +12,10 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 
 def run(engine, batch_size, input_len, output_len, warmup=True):
     # warm up
@@ -148,11 +152,11 @@ def profile(model):
 
 
 def plot(names, x, ys, x_label, y_label, figname):
-    FONTSIZE = 20
+    FONTSIZE = 26
     MARKERSIZE = 8
     legend_x = 0.5
     legend_y = 1.1
-    ylabel_x = -0.1
+    ylabel_x = -0.04
     ylabel_y = 0.5
     markers = ['v','s','o','+','s','D', 'P','X']
 
