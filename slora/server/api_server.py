@@ -367,8 +367,12 @@ def main():
     parser.add_argument("--profile", action="store_true")
     parser.add_argument("--batch-num-adapters", type=int, default=None)
     parser.add_argument("--enable-abort", action="store_true")
-    parser.add_argument("--fair-weights", type=int, default=[], action="append")
+    parser.add_argument("--fair-weights", type=float, nargs="+", default=[1],
+                        help="One or more fair weights")
     parser.add_argument("--rate-limit", type=int, default=None)
+    parser.add_argument("--predict-range", type=float, default=0)
+    parser.add_argument("--cost-func", type=str, default="linear",
+                        choices=["linear", "profile"])
 
     # debug parameters
     # do not use no-lora-swap, does not rule out the swap over MemAllocator

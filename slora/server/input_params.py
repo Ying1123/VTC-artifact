@@ -50,6 +50,8 @@ class InputParams:
         # fairness
         fair_weights,
         rate_limit, # for rpm baseline scheduler
+        predict_range, # for VTC length prediction scheduler
+        cost_func,
     ) -> None:
         self.max_req_total_len = max_req_total_len
         self.max_total_token_num = max_total_token_num
@@ -79,5 +81,7 @@ class InputParams:
         
         self.fair_weights = fair_weights
         self.rate_limit = rate_limit
+        self.predict_range = predict_range
+        self.cost_func = cost_func
         return
  

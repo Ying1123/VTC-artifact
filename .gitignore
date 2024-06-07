@@ -7,6 +7,4 @@ dist
 *.swp
 *.so
 .DS_Store
-*.json
-*.jsonl
 *.pdf

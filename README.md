@@ -1,5 +1,5 @@
 # VTC Artifact for "Fairness in Serving Large Language Models [[paper](https://arxiv.org/abs/2401.00588)]"
-Experiments instructions in `fair_bench/README.md`.
+Experiments instructions in `fair_bench/README.md` and `fair_bench/REVISION.md`.
 The prototype is build on top of S-LoRA, which is described below.
 
 

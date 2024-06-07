@@ -10,7 +10,7 @@ from slora.utils.infer_utils import  calculate_time
 from slora.server.router.req_queue import ReqQueue
 
 
-class VTCReqQueue(ReqQueue):
+class VTCLenPredictReqQueue(ReqQueue):
 
     def __init__(self, max_total_tokens, batch_max_tokens, running_max_req_size,
                  adapter_dirs, fair_weights, cost_func,
@@ -19,6 +19,8 @@ class VTCReqQueue(ReqQueue):
         self.input_price = input_price
         self.output_price = output_price
         self.served = {}
+        self.predict_len = {}
+        self.predict_window = 5
         self.user_req_list = {}
 
         self.adapter_dirs = adapter_dirs
@@ -38,6 +40,7 @@ class VTCReqQueue(ReqQueue):
         if req.adapter_dir not in self.user_req_list:
             self.user_req_list[req.adapter_dir] = deque([req])
             self.served[req.adapter_dir] = 0
+            self.predict_len[req.adapter_dir] = 0
         else:
             self.user_req_list[req.adapter_dir].append(req)
 
@@ -118,11 +121,17 @@ class VTCReqQueue(ReqQueue):
                     new_batch_total_tokens += req.input_len
                     self.user_req_list[adapter_dir].popleft()
                     # update fairness counter
+                    weight = self.fairw[adapter_dir]
+                    req.predict_len = self.predict_len[adapter_dir]
                     if self.cost_func == "linear":
-                        self.served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
-                        active_served[adapter_dir] += req.input_len * self.input_price / self.fairw[adapter_dir]
+                        self.served[adapter_dir] += (
+                                req.input_len * self.input_price / weight +
+                                req.predict_len * self.output_price / weight)
+                        active_served[adapter_dir] += (
+                                req.input_len * self.input_price / weight +
+                                req.predict_len * self.output_price / weight)
                     elif self.cost_func == "profile":
-                        delta = self.cost_func_profile(req.input_len, 0) / self.fairw[adapter_dir]
+                        delta = self.cost_func_profile(req.input_len, req.predict_len) / weight
                         self.served[adapter_dir] += delta
                         active_served[adapter_dir] += delta
                     else:
@@ -143,13 +152,39 @@ class VTCReqQueue(ReqQueue):
     
     def update_counter(self, current_batch: Batch):
         for req in current_batch.reqs:
-            if self.cost_func == "linear":
-                self.served[req.adapter_dir] += 1 * self.output_price / self.fairw[req.adapter_dir]
-            elif self.cost_func == "profile":
-                cur_output_len = len(req.output_ids)
-                delta = (self.cost_func_profile(req.input_len, cur_output_len) -
-                         self.cost_func_profile(req.input_len, cur_output_len - 1)) / self.fairw[req.adapter_dir]
-                self.served[req.adapter_dir] += delta
+            cur_output_len = len(req.output_ids)
+            if cur_output_len > req.predict_len:
+                if self.cost_func == "linear":
+                    self.served[req.adapter_dir] += (
+                            1 * self.output_price / self.fairw[req.adapter_dir])
+                elif self.cost_func == "profile":
+                    delta = (self.cost_func_profile(req.input_len, cur_output_len) -
+                             self.cost_func_profile(req.input_len, cur_output_len - 1)) / self.fairw[req.adapter_dir]
+                    self.served[req.adapter_dir] += delta
+                else:
+                    raise Exception("unrecognized cost function")
+
+            if req.has_generate_finished:
+                if len(req.output_ids) < req.predict_len:
+                    if self.cost_func == "linear":
+                        delta = req.predict_len - len(req.output_ids)
+                        self.served[req.adapter_dir] -= (
+                                delta * self.output_price / self.fairw[req.adapter_dir])
+                    elif self.cost_func == "profile":
+                        delta = (self.cost_func_profile(req.input_len, cur_output_len) -
+                                 self.cost_func_profile(req.input_len, req.predict_len)) / self.fairw[req.adapter_dir]
+                        self.served[req.adapter_dir] += delta
+                    else:
+                        raise Exception("unrecognized cost function")
+
+                # update prediction
+                old_predict = self.predict_len[req.adapter_dir]
+                if old_predict == 0:
+                    self.predict_len[req.adapter_dir] = len(req.output_ids)
+                else:
+                    window = self.predict_window
+                    self.predict_len[req.adapter_dir] = (
+                            old_predict * (window - 1) + len(req.output_ids)) / window
 
 
     def next_batch(self):

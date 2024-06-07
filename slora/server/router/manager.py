@@ -25,6 +25,8 @@ from slora.server.router.abort_req_queue import AbortReqQueue
 from slora.server.router.cluster_req_queue import ClusterReqQueue
 from slora.server.router.vtc_max_req_queue import VTCMaxReqQueue
 from slora.server.router.vtc_req_queue import VTCReqQueue
+from slora.server.router.vtc_pred_len_req_queue import VTCLenPredictReqQueue
+from slora.server.router.vtc_oracle_req_queue import VTCOracleReqQueue
 from slora.server.router.lcf_req_queue import LCFReqQueue
 from slora.server.router.mdrr_req_queue import MDRRReqQueue
 from slora.server.router.pets_req_queue import PETSReqQueue
@@ -38,17 +40,29 @@ def get_scheduler(input_params, adapter_dirs):
                               input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
     elif input_params.scheduler == "lcf_fair":
         return LCFReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
-                                 input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
+                           input_params.running_max_req_size, adapter_dirs,
+                           input_params.fair_weights)
     elif input_params.scheduler == "vtc_fair":
         return VTCReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
-                           input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
+                           input_params.running_max_req_size, adapter_dirs,
+                           input_params.fair_weights, input_params.cost_func)
+    elif input_params.scheduler == "vtc_len_predict":
+        return VTCLenPredictReqQueue(
+                input_params.max_total_token_num, input_params.batch_max_tokens,
+                input_params.running_max_req_size, adapter_dirs,
+                input_params.fair_weights, input_params.cost_func)
+    elif input_params.scheduler == "vtc_oracle":
+        return VTCOracleReqQueue(
+                input_params.max_total_token_num, input_params.batch_max_tokens,
+                input_params.running_max_req_size, adapter_dirs,
+                input_params.fair_weights, input_params.predict_range, input_params.cost_func)
     elif input_params.scheduler == "mdrr_fair":
         return MDRRReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
-                              input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
+                            input_params.running_max_req_size, adapter_dirs, input_params.fair_weights)
     elif input_params.scheduler == "lshare_fair":
         assert input_params.enable_abort, "lshare_fair must be used with --enable-abort flag"
         return LShareReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
-                             input_params.running_max_req_size, input_params.rate_limit)
+                              input_params.running_max_req_size, input_params.rate_limit)
     elif input_params.scheduler == "pets":
         return PETSReqQueue(input_params.max_total_token_num, input_params.batch_max_tokens,
                             input_params.running_max_req_size)
@@ -322,6 +336,7 @@ class RouterManager:
 
     async def _handle_finish_req(self, batch: Batch, has_new_finished_req, minibatch=False):
         if has_new_finished_req:
+            self.req_queue.update_counter(batch)
             batch.filter_finished()
 
             # unmerge adapter from base model
@@ -418,6 +433,8 @@ def start_router_process(args, router_port, detokenization_port, model_rpc_ports
                                no_lora=args.no_lora,
                                fair_weights=args.fair_weights,
                                rate_limit=args.rate_limit,
+                               predict_range=args.predict_range,
+                               cost_func=args.cost_func,
                               )
 
     try:
